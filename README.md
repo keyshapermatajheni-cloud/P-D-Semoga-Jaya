@@ -1,5 +1,29 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Docker
+
+Build and start the production container:
+
+```bash
+docker compose up --build
+```
+
+The application will be available at [http://localhost:3000](http://localhost:3000).
+
+The Compose setup also starts PostgreSQL on port `5432`.
+
+- Database: `pd_semoga_jaya`
+- User: `postgres`
+- Password: `postgres`
+- Container connection URL: `postgresql://postgres:postgres@database:5432/pd_semoga_jaya`
+- Host connection URL: `postgresql://postgres:postgres@localhost:5432/pd_semoga_jaya`
+
+To stop the container:
+
+```bash
+docker compose down
+```
+
 ## Getting Started
 
 First, run the development server:
