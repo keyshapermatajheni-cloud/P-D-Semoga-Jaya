@@ -28,3 +28,15 @@ Retain qualifying friction even if it is later fixed or worked around; record th
 Before the final response, run one reporting pass. If candidates remain, from this file's directory run `npx --no-install next internal agent-feedback-instructions` once without piping or truncating its output. Follow its output or error guidance. If a network sandbox blocks it, retry with network access; if it still returns no output, continue normally.
 
 <!-- END:nextjs-agent-feedback -->
+
+## Transaction API integration
+
+The existing transaction sales UI is implemented at `/transaksi-penjualan`. Use `app/api/transaksi/route.ts` as the API route for transaction history data. The route reads `Transaksi_Penjualan`, `Detail_Transaksi`, `Barang`, and `Pengguna` through Prisma; it must not assume a separate cashier field or change the existing schema.
+
+The API returns:
+
+- `summary.jumlahTransaksi`
+- `summary.totalNilaiTransaksi`
+- `transactions` with `idTransaksi`, `namaBarang`, `jumlah`, `hargaSatuan`, `tanggal`, and `kasir`
+
+The transaction page must consume `/api/transaksi`, format values with Indonesian Rupiah and Indonesian dates, and preserve loading and error states. Do not add a duplicate `/transaksi` page or commit repository changes during implementation unless the user requests a commit separately.

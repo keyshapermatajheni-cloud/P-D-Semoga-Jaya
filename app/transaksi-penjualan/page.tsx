@@ -2,6 +2,7 @@ import { AppShell } from "@/app/components/app-shell";
 import { prisma } from "@/app/lib/prisma";
 import { TransaksiForm } from "./transaksi-form";
 import { ReceiptActions } from "./receipt-actions";
+import { TransaksiHistory } from "./transaksi-history";
 
 export const instant = false;
 
@@ -80,7 +81,6 @@ export default async function TransaksiPenjualanPage({
   }
 
   const barangs = await prisma.barang.findMany({
-    where: { stok_display: { gt: 0 } },
     orderBy: { nama_barang: "asc" },
     select: {
       id_barang: true,
@@ -104,6 +104,7 @@ export default async function TransaksiPenjualanPage({
           harga_jual: Number(item.harga_jual).toString(),
         }))}
       />
+      <TransaksiHistory />
     </AppShell>
   );
 }
