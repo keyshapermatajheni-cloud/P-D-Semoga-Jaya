@@ -1,11 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createId } from "@/app/lib/ids";
 import { prisma } from "@/app/lib/prisma";
-
-function createId() {
-  return `B${Date.now().toString().slice(-9)}`.slice(0, 10);
-}
 
 export async function createBarang(formData: FormData) {
   const nama = String(formData.get("nama") ?? "").trim();
@@ -26,7 +23,7 @@ export async function createBarang(formData: FormData) {
   try {
     await prisma.barang.create({
       data: {
-        id_barang: createId(),
+        id_barang: createId("B", 10),
         nama_barang: nama,
         satuan,
         harga_beli: harga,
@@ -38,7 +35,8 @@ export async function createBarang(formData: FormData) {
     });
     revalidatePath("/data-barang");
     return { ok: true, message: "Data Tersimpan: barang berhasil ditambahkan." };
-  } catch {
+  } catch (error) {
+    console.error("Gagal menambahkan barang:", error);
     return { ok: false, message: "Barang gagal ditambahkan." };
   }
 }
@@ -72,7 +70,8 @@ export async function updateBarang(formData: FormData) {
     });
     revalidatePath("/data-barang");
     return { ok: true, message: "Data Tersimpan: barang berhasil diperbarui." };
-  } catch {
+  } catch (error) {
+    console.error("Gagal memperbarui barang:", error);
     return { ok: false, message: "Barang gagal diperbarui." };
   }
 }
@@ -103,7 +102,8 @@ export async function deleteBarang(formData: FormData) {
     await prisma.barang.delete({ where: { id_barang: id } });
     revalidatePath("/data-barang");
     return { ok: true, message: "Barang berhasil dihapus." };
-  } catch {
+  } catch (error) {
+    console.error("Gagal menghapus barang:", error);
     return { ok: false, message: "Barang gagal dihapus." };
   }
 }

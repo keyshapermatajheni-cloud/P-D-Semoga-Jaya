@@ -1,14 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createId } from "@/app/lib/ids";
 import { prisma } from "@/app/lib/prisma";
-
-function createId(prefix: string, maxLength: number, counterLength: number) {
-  const value = `${Date.now()}${Math.floor(Math.random() * 1000000)
-    .toString()
-    .padStart(6, "0")}`;
-  return `${prefix}${value.slice(-counterLength)}`.slice(0, maxLength);
-}
 
 export async function createTransaksi(formData: FormData) {
   const itemIds = formData.getAll("itemId").map(String);
@@ -64,7 +58,7 @@ export async function createTransaksi(formData: FormData) {
         }
       }
 
-      const id_transaksi = createId("TRX-", 25, 10);
+      const id_transaksi = createId("TRX-", 25);
       await tx.transaksi_Penjualan.create({
         data: {
           id_transaksi,
@@ -74,10 +68,10 @@ export async function createTransaksi(formData: FormData) {
       });
 
       await tx.detail_Transaksi.createMany({
-        data: items.map((item, index) => {
+        data: items.map((item) => {
           const current = barangById.get(item.id_barang)!;
           return {
-            id_detail_transaksi: createId("DT", 9, 7) + String(index + 1),
+            id_detail_transaksi: createId("DT", 10),
             jumlah: item.jumlah,
             harga_satuan: current.harga_jual,
             id_transaksi,
@@ -87,16 +81,25 @@ export async function createTransaksi(formData: FormData) {
       });
 
       for (const item of items) {
-        await tx.barang.update({
-          where: { id_barang: item.id_barang },
+        const updated = await tx.barang.updateMany({
+          where: {
+            id_barang: item.id_barang,
+            stok_display: { gte: item.jumlah },
+          },
           data: { stok_display: { decrement: item.jumlah } },
         });
+        if (updated.count !== 1) {
+          throw new Error("Stok display berubah. Muat ulang halaman lalu coba lagi.");
+        }
       }
 
       return id_transaksi;
     });
 
     revalidatePath("/transaksi-penjualan");
+    revalidatePath("/stok-terkini");
+    revalidatePath("/informasi-persediaan");
+    revalidatePath("/permintaan-barang");
     revalidatePath("/dashboard");
     return { ok: true, message: "Transaksi berhasil disimpan.", saleId };
   } catch (error) {

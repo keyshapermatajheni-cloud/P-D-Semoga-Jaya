@@ -24,15 +24,16 @@ To stop the container:
 docker compose down
 ```
 
-## Seeding barang ke Neon
+## Seeding barang dan data operasional ke Neon
 
-Dengan `DATABASE_URL` Neon yang benar di `.env`, jalankan dari folder proyek:
+Dengan `DATABASE_URL` Neon yang benar di `.env`, jalankan dari folder proyek. Seed barang menambahkan 80 jenis barang baru tanpa memperbarui atau menghapus data lama. Seed dapat dijalankan kembali; barang dengan ID seed yang sama akan dilewati.
 
 ```bash
 node prisma/seed-barang-neon.mjs
+node prisma/seed-operasional-neon.mjs
 ```
 
-Seed menambahkan 80 barang baru tanpa memperbarui atau menghapus data lama. Seed dapat dijalankan kembali; barang dengan ID seed yang sama akan dilewati. Proses dibatalkan jika host bukan Neon, jumlah tabel `public` bukan 12, atau ID/nama barang bertabrakan.
+Seed operasional menambahkan akun role, supplier, contoh pemesanan/penerimaan, transaksi, permintaan stok, pemindahan stok, dan laporan agar alur aplikasi dapat dicoba. Akun role memakai kredensial demo yang sudah digunakan layar login. Password akun baru disimpan dalam bentuk hash. Kedua seed menolak host non-Neon dan membatalkan proses jika jumlah tabel `public` bukan 12.
 
 ## Getting Started
 

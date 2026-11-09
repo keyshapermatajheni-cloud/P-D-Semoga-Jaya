@@ -1,4 +1,5 @@
 import { AppShell, type UserRole } from "./app-shell";
+import type { ReactNode } from "react";
 
 export function RoutePage({
   role,
@@ -14,7 +15,7 @@ export function RoutePage({
   subtitle: string;
   activeHref: string;
   columns: string[];
-  rows: string[][];
+  rows: ReactNode[][];
   emptyMessage: string;
 }) {
   const gridTemplateColumns = columns.map(() =>
@@ -45,7 +46,7 @@ export function RoutePage({
               key={rowIndex}
             >
               {row.map((cell, cellIndex) => (
-                <span role="cell" key={cellIndex}>{cell}</span>
+                <div role="cell" key={cellIndex}>{cell}</div>
               ))}
             </div>
           ))}

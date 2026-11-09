@@ -1,15 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createId } from "@/app/lib/ids";
 import { prisma } from "@/app/lib/prisma";
-
-function createId(prefix: string, maxLength: number, counterLength = 8) {
-  const value = `${Date.now()}${Math.floor(Math.random() * 1000000)
-    .toString()
-    .padStart(6, "0")}`;
-  const suffix = value.slice(-counterLength);
-  return `${prefix}${suffix}`.slice(0, maxLength);
-}
 
 export async function createPemesanan(formData: FormData) {
   const supplierId = String(formData.get("supplierId") ?? "");
@@ -78,8 +71,9 @@ export async function createPemesanan(formData: FormData) {
     return { ok: false, message: "Satu atau lebih barang tidak ditemukan." };
   }
 
-  await prisma.$transaction(async (tx) => {
-    const orderId = createId("PO-", 25, 8);
+  try {
+    await prisma.$transaction(async (tx) => {
+    const orderId = createId("PO-", 25);
     await tx.pemesanan_Barang.create({
       data: {
         id_pemesanan: orderId,
@@ -91,15 +85,21 @@ export async function createPemesanan(formData: FormData) {
     });
 
     await tx.detail_Pemesanan.createMany({
-      data: items.map((item, index) => ({
-        id_detail_pemesanan: createId("DP", 9, 7) + String(index + 1),
+      data: items.map((item) => ({
+        id_detail_pemesanan: createId("DP", 10),
         jumlah_dipesan: item.jumlah_dipesan,
         id_barang: item.id_barang,
         id_pemesanan: orderId,
       })),
     });
-  });
+    });
+  } catch (error) {
+    console.error("Gagal menyimpan pemesanan barang:", error);
+    return { ok: false, message: "Pemesanan gagal disimpan. Silakan coba lagi." };
+  }
 
   revalidatePath("/pemesanan-barang");
+  revalidatePath("/barang-masuk");
+  revalidatePath("/dashboard");
   return { ok: true, message: "Pemesanan berhasil dikirim." };
 }
